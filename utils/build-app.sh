@@ -6,6 +6,8 @@
 platform=$1
 platform=$(printf '%s\n' "$platform" | awk '{ print toupper($0) }')
 
+npm install --unsafe-perm
+
 if [ $platform == "IOS" ]; then
     echo Y | npm run build-ios
 elif [ $platform == "ANDROID" ]; then
