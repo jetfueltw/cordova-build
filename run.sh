@@ -1,6 +1,21 @@
 #! /bin/bash
 
 source env.sh
-rm -rf $repositoryName
-git clone $repositoryUrl
-docker run -v $(pwd)/$repositoryName:/workspace --rm -it cordova-build bash
+
+echo "REPOSITORY_NAME: $REPOSITORY_NAME"
+echo "BUILD_WORKDIR: $BUILD_WORKDIR"
+
+rm -rf $REPOSITORY_NAME
+git clone $REPOSITORY_URL
+
+docker run -v $(pwd)/$REPOSITORY_NAME:$BUILD_WORKDIR \
+         -v $KEYSTORE_FILE_SOURCE:$KEYSTORE_FILE \
+         -e KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD \
+         -e KEYSTORE_FILE=$KEYSTORE_FILE \
+         -e KEYSTORE_ALIAS=$KEYSTORE_ALIAS \
+         -e ANDROID_APK_OUTPUT_PATH=$ANDROID_APK_OUTPUT_PATH \
+         -e ANDROID_UNSIGNED_APK=$ANDROID_UNSIGNED_APK \
+         -e ANDROID_SIGNED_APK=$ANDROID_SIGNED_APK \
+         -e ANDROID_RELEASE_APK=$ANDROID_RELEASE_APK \
+         -e BUILD_WORKDIR=$BUILD_WORKDIR \
+         --rm -it $BUILD_APP_IMAGE /tmp/shell/build-app.sh ANDROID $BUILD_WORKDIR

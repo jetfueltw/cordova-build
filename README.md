@@ -7,6 +7,22 @@ IOS App 需要 mac 與 Xcode，因此暫時無法直接build。</br></br>
 
 ````
 #! /bin/bash
-repositoryUrl=https://[repositoryUrl] ex. gitlab.com/orgnization/appProject.git
-repositoryName=[repositoryName]  ex. appPoject
+BUILD_APP_IMAGE=jetfueltw/cordova-build #用來build app的docker image
+
+CURRENT_PATH=$(pwd)
+
+REPOSITORY_URL=https://[repositoryUrl] ex. gitlab.com/orgnization/appProject.git
+REPOSITORY_NAME=[repositoryName]  ex. appPoject
+BUILD_WORKDIR=/workspace #container內的工作目錄，專案mount進去的主要目錄
+
+#android
+KEYSTORE_PASSWORD=<password> #keystore的密碼
+KEYSTORE_FILE_SOURCE=<$CURRENT_PATH/android-release-key.keystore> # 在本地的位置
+KEYSTORE_FILE=/tmp/key/android-release-key.keystore # keystore檔案放到container裡面的位置
+KEYSTORE_ALIAS=<keystore alias>
+
+ANDROID_APK_OUTPUT_PATH=<ex. /workspace/src-cordova/platforms/android/app/build/outputs/apk/release>
+ANDROID_UNSIGNED_APK=<ex. $ANDROID_APK_OUTPUT_PATH/app-release-unsigned.apk> #剛build好，尚未簽名的apk檔案位置
+ANDROID_SIGNED_APK=<ex. $ANDROID_APK_OUTPUT_PATH/app-release-signed.apk> #簽名好的apk檔案位置
+ANDROID_RELEASE_APK=<ex. $ANDROID_APK_OUTPUT_PATH/app-release.apk> #完成品
 ````

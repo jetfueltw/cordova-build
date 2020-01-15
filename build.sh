@@ -1,2 +1,4 @@
 #! /bin/bash
-docker build -t cordova-build:latest .
+source env.sh
+rm -rf $REPOSITORY_NAME
+docker build -t jetfueltw/cordova-build:latest .
