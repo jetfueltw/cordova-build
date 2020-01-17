@@ -31,6 +31,7 @@ cd $projectBasePath
 
 #install node_modules
 npm install --unsafe-perm
+npm rebuild node-sass
 
 if [ $platform == "IOS" ]; then
     echo Y | npm run build-ios
