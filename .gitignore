@@ -1,3 +1,4 @@
 env.sh
 utils/*.keystore
 .DS_Store
+.idea
