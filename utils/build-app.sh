@@ -45,6 +45,9 @@ buildAndroidApk() {
         tmpOutputPath="undefined"
     fi
 
+    #latest version path
+    latestVersionPath=${tmpOutputPath%\/*}/latest
+
     #build unsigned.apk
     echo Y | npm run build-android
 
@@ -61,6 +64,12 @@ buildAndroidApk() {
     mkdir -p $tmpOutputPath
     cp $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
     echo "list: $tmpOutputPath" && ls -la $tmpOutputPath
+
+    #copy apk to latestVersionPath
+    mkdir -p $latestVersionPath
+    cp $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
+    echo "list: $latestVersionPath" && ls -la $latestVersionPath
+
 }
 
 buildIOSApp() {
@@ -89,12 +98,12 @@ readEnvList() {
       THIS_ENV=${ENV_LIST[$i]}
 
       #change api url setting
-      if [ $THIS_ENV == "qa" ]; then
-          echo $ENV_QA | base64 -d > .env.production.local
-      elif [ $THIS_ENV == "prod" ]; then
-          echo $ENV_PROD | base64 -d > .env.production.local
-      else
-          echo $ENV_QA | base64 -d > .env.production.local
+      if [[ $THIS_ENV == "qa" ]] && [[ $ENV_QA != "" ]]; then
+          printf "use ENV_QA for .env.production.local\n"
+          printf $ENV_QA | base64 -d > .env.production.local
+      elif [[ $THIS_ENV == "prod" ]] && [[ $ENV_PROD != "" ]]; then
+          printf "use ENV_PROD for .env.production.local\n"
+          printf $ENV_PROD | base64 -d > .env.production.local
       fi
 
       readAgentList $THIS_ENV
@@ -120,7 +129,15 @@ readVersionList() {
 
   for ((k=0; k < ${#VERSION_LIST[@]}; k++)); do
     THIS_VERSION=${VERSION_LIST[$k]}
-    echo "Build App - [platform]: $platform, [ENV]: $THIS_ENV, [AGENT]: $THIS_AGENT, [VERSION]: $THIS_VERSION"
+    printf "Build App - [platform]: $platform, [ENV]: $THIS_ENV, [AGENT]: $THIS_AGENT, [VERSION]: $THIS_VERSION\n"
+
+    if [ $THIS_VERSION != "latest" ]; then
+      printf "Set VERSION = $THIS_VERSION\n"
+      printf "\nVERSION=$THIS_VERSION" >> .env.production.local
+    fi
+
+    printf "cat .env.production.local\n" && cat .env.production.local
+    printf "cat .env.production.android.local\n" && cat .env.production.android.local
     buildApp $THIS_ENV/$THIS_AGENT/$THIS_VERSION
   done
 }
