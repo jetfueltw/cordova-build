@@ -70,6 +70,10 @@ buildAndroidApk() {
     cp $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
     echo "list: $latestVersionPath" && ls -la $latestVersionPath
 
+    if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
+      echo "Build Failed"
+      exit 2
+    fi
 }
 
 buildIOSApp() {
