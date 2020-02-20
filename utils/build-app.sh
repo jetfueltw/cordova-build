@@ -112,7 +112,6 @@ readEnvList() {
           printf $ENV_PROD | base64 -d > .env.production.local
       else
         echo "Err! can not get ENV variable (ENV_DEV, ENV_QA, ENV_PROD) in CI for .env.production.local"
-        exit 2
       fi
 
       readAgentList $THIS_ENV
