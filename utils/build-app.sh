@@ -30,7 +30,7 @@ echo "VERSION_LIST: ${VERSION_LIST[*]}"
 
 echo "projectBasePath: $projectBasePath"
 echo "KEYSTORE_FILE: $KEYSTORE_FILE"
-echo "ANDROID_APK_OUTPUT_PATH: $ANDROID_APK_OUTPUT_PATH"
+echo "ANDROID_RELEASE_APK_OUTPUT_PATH: $ANDROID_RELEASE_APK_OUTPUT_PATH"
 echo "ANDROID_UNSIGNED_APK: $ANDROID_UNSIGNED_APK"
 echo "ANDROID_SIGNED_APK: $ANDROID_SIGNED_APK"
 echo "ANDROID_RELEASE_APK: $ANDROID_RELEASE_APK"
@@ -51,22 +51,22 @@ buildAndroidApk() {
     echo Y | npm run build-android
 
     #get signed.apk
-    echo $KEYSTORE_PASSWORD | jarsigner -verbose -keystore $KEYSTORE_FILE -signedjar $ANDROID_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $KEYSTORE_ALIAS
+    echo $KEYSTORE_PASSWORD | jarsigner -verbose -keystore $KEYSTORE_FILE -signedjar $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $KEYSTORE_ALIAS
 
     #zipalign release.apk
-    zipalign -v 4 $ANDROID_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK
+    zipalign -v 4 $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK
 
     #list outputs
-    echo "list: $ANDROID_APK_OUTPUT_PATH" && ls -la $ANDROID_APK_OUTPUT_PATH
+    echo "list: $ANDROID_RELEASE_APK_OUTPUT_PATH" && ls -la $ANDROID_RELEASE_APK_OUTPUT_PATH
 
     #copy apk to tmpOutputPath
     mkdir -p $tmpOutputPath
-    cp $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
     echo "list: $tmpOutputPath" && ls -la $tmpOutputPath
 
     #copy apk to latestVersionPath
     mkdir -p $latestVersionPath
-    cp $ANDROID_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
     echo "list: $latestVersionPath" && ls -la $latestVersionPath
 
     if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
