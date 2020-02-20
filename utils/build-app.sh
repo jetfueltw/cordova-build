@@ -1,7 +1,6 @@
 #! /bin/bash
 
 # ./build-app.sh android <projectBasePath>    產出android app
-# ./build-app.sh ios     <projectBasePath>    產出ios app
 
 platform=$1
 platform=$(printf '%s\n' "$platform" | awk '{ print toupper($0) }')
@@ -102,12 +101,18 @@ readEnvList() {
       THIS_ENV=${ENV_LIST[$i]}
 
       #change api url setting
-      if [[ $THIS_ENV == "qa" ]] && [[ $ENV_QA != "" ]]; then
+      if [[ $THIS_ENV == "dev" ]] && [[ $ENV_DEV != "" ]]; then
+          printf "use ENV_DEV for .env.production.local\n"
+          printf $ENV_DEV | base64 -d > .env.production.local
+      elif [[ $THIS_ENV == "qa" ]] && [[ $ENV_QA != "" ]]; then
           printf "use ENV_QA for .env.production.local\n"
           printf $ENV_QA | base64 -d > .env.production.local
       elif [[ $THIS_ENV == "prod" ]] && [[ $ENV_PROD != "" ]]; then
           printf "use ENV_PROD for .env.production.local\n"
           printf $ENV_PROD | base64 -d > .env.production.local
+      else
+        echo "Err! can not get ENV variable (ENV_DEV, ENV_QA, ENV_PROD) in CI for .env.production.local"
+        exit 2
       fi
 
       readAgentList $THIS_ENV
