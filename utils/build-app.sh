@@ -147,7 +147,7 @@ readVersionList() {
 
     printf "cat .env.production.local\n" && cat .env.production.local
     printf "cat .env.production.android.local\n" && cat .env.production.android.local
-    buildApp $THIS_ENV/$THIS_AGENT/$THIS_VERSION
+    buildApp $THIS_AGENT/app/cpw/$THIS_VERSION/$platform/$THIS_ENV/
   done
 }
 
