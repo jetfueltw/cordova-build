@@ -3,7 +3,7 @@
 # ./build-app.sh android <projectBasePath>    產出android app
 
 platform=$1
-platform=$(printf '%s\n' "$platform" | awk '{ print toupper($0) }')
+platform=$(printf '%s\n' "$platform" | awk '{ print tolower($0) }')
 
 projectBasePath=$2
 
@@ -89,10 +89,10 @@ buildApp() {
   #tmp path for upload to s3
   tmpOutputPath=$1
 
-  if [ $platform == "IOS" ]; then
-      buildIOSApp "IOS/$tmpOutputPath"
-  elif [ $platform == "ANDROID" ]; then
-      buildAndroidApk "ANDROID/$tmpOutputPath"
+  if [ $platform == "ios" ]; then
+      buildIOSApp "ios/$tmpOutputPath"
+  elif [ $platform == "android" ]; then
+      buildAndroidApk "android/$tmpOutputPath"
   fi
 }
 
