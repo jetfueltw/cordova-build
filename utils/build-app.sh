@@ -35,7 +35,9 @@ echo "projectBasePath: $projectBasePath"
 echo "KEYSTORE_FILE: $KEYSTORE_FILE"
 
 echo "ANDROID_RELEASE_APK_OUTPUT_PATH: $ANDROID_RELEASE_APK_OUTPUT_PATH"
+echo "ANDROID_DEBUG_APK_OUTPUT_PATH: $ANDROID_DEBUG_APK_OUTPUT_PATH"
 
+echo "ANDROID_DEBUG_APK: $ANDROID_DEBUG_APK"
 echo "ANDROID_UNSIGNED_APK: $ANDROID_UNSIGNED_APK"
 echo "ANDROID_SIGNED_APK: $ANDROID_SIGNED_APK"
 echo "ANDROID_RELEASE_APK: $ANDROID_RELEASE_APK"
@@ -55,6 +57,19 @@ buildAndroidApk() {
     echo "android apk - latestVersionPath: $latestVersionPath"
     mkdir -p $tmpOutputPath
     mkdir -p $latestVersionPath
+
+    #build debug apk
+    if [[ ! -z $ANDROID_DEBUG_APK_OUTPUT_PATH && ! -z $ANDROID_DEBUG_APK && $THIS_ENV != "prod" ]]; then
+        echo Y | npm run dev-android
+
+        if [[ -f $ANDROID_DEBUG_APK_OUTPUT_PATH/$ANDROID_DEBUG_APK ]]; then
+          #copy debug apk to tmpOutputPath & latestVersionPath
+          cp $ANDROID_DEBUG_APK_OUTPUT_PATH/$ANDROID_DEBUG_APK $tmpOutputPath/$ANDROID_DEBUG_APK
+          cp $ANDROID_DEBUG_APK_OUTPUT_PATH/$ANDROID_DEBUG_APK $latestVersionPath/$ANDROID_DEBUG_APK
+        else
+          echo "ENV: $THIS_ENV, SITE_CODE: $THIS_AGENT, can not find debug apk"
+        fi
+    fi
 
     #build unsigned.apk
     echo Y | npm run build-android
