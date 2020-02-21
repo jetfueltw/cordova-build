@@ -30,7 +30,9 @@ echo "VERSION_LIST: ${VERSION_LIST[*]}"
 
 echo "projectBasePath: $projectBasePath"
 echo "KEYSTORE_FILE: $KEYSTORE_FILE"
+
 echo "ANDROID_RELEASE_APK_OUTPUT_PATH: $ANDROID_RELEASE_APK_OUTPUT_PATH"
+
 echo "ANDROID_UNSIGNED_APK: $ANDROID_UNSIGNED_APK"
 echo "ANDROID_SIGNED_APK: $ANDROID_SIGNED_APK"
 echo "ANDROID_RELEASE_APK: $ANDROID_RELEASE_APK"
@@ -45,7 +47,9 @@ buildAndroidApk() {
     fi
 
     #latest version path
-    latestVersionPath=${tmpOutputPath%\/*}/latest
+    latestVersionPath=$(echo $tmpOutputPath | sed "s/$THIS_VERSION/latest/")
+    echo "android apk - tmpOutputPath: $tmpOutputPath"
+    echo "android apk - latestVersionPath: $latestVersionPath"
 
     #build unsigned.apk
     echo Y | npm run build-android
@@ -62,11 +66,13 @@ buildAndroidApk() {
     #copy apk to tmpOutputPath
     mkdir -p $tmpOutputPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_ANDROID_UNSIGNED_APK $tmpOutputPath/$ANDROID_ANDROID_UNSIGNED_APK
     echo "list: $tmpOutputPath" && ls -la $tmpOutputPath
 
     #copy apk to latestVersionPath
     mkdir -p $latestVersionPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_ANDROID_UNSIGNED_APK $latestVersionPath/$ANDROID_ANDROID_UNSIGNED_APK
     echo "list: $latestVersionPath" && ls -la $latestVersionPath
 
     if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
@@ -136,7 +142,7 @@ readVersionList() {
   THIS_AGENT=$2
 
   for ((k=0; k < ${#VERSION_LIST[@]}; k++)); do
-    THIS_VERSION=${VERSION_LIST[$k]}
+    export THIS_VERSION=${VERSION_LIST[$k]}
     printf "Build App - [platform]: $platform, [ENV]: $THIS_ENV, [AGENT]: $THIS_AGENT, [VERSION]: $THIS_VERSION\n"
 
     if [ $THIS_VERSION != "latest" ]; then
@@ -146,9 +152,15 @@ readVersionList() {
 
     printf "cat .env.production.local\n" && cat .env.production.local
     printf "cat .env.production.android.local\n" && cat .env.production.android.local
-    buildApp $THIS_AGENT/app/cpw/$THIS_VERSION/$platform/$THIS_ENV/
+    buildApp $THIS_ENV/$THIS_AGENT/app/cpw/$THIS_VERSION/$platform
   done
 }
+
+if [[ ! -z $ANDROID_KEYSTORE ]]; then
+  echo "create android keystore! path: /tmp/key"
+  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
+fi
+
 
 #install node_modules
 npm install --unsafe-perm
