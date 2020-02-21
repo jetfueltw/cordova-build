@@ -25,8 +25,11 @@ IFS=',' read -a VERSION_LIST <<< "$VERSION_LIST"
 #print params
 echo "platform: $platform"
 echo "ENV_LIST: ${ENV_LIST[*]}"
-echo "AGENT_LIST: ${AGENT_LIST[*]}"
 echo "VERSION_LIST: ${VERSION_LIST[*]}"
+
+echo "DEV_AGENT_LIST: ${DEV_AGENT_LIST[*]}"
+echo "QA_AGENT_LIST: ${QA_AGENT_LIST[*]}"
+echo "PROD_AGENT_LIST: ${PROD_AGENT_LIST[*]}"
 
 echo "projectBasePath: $projectBasePath"
 echo "KEYSTORE_FILE: $KEYSTORE_FILE"
@@ -128,14 +131,30 @@ readEnvList() {
 readAgentList() {
   THIS_ENV=$1
 
-  for ((j=0; j < ${#AGENT_LIST[@]}; j++)); do
-    THIS_AGENT=${AGENT_LIST[$j]}
+  #依據環境，取得相對應的agentList
+  if [[ $THIS_ENV == "dev" ]]; then
+      agentList=$DEV_AGENT_LIST
+  elif [[ $THIS_ENV == "qa" ]]; then
+      agentList=$QA_AGENT_LIST
+  elif [[ $THIS_ENV == "prod" ]]; then
+      agentList=$PROD_AGENT_LIST
+  fi
 
-    #change agent setting
-    echo "SITE_CODE=$THIS_AGENT" > .env.production.android.local
+  #agentList存在，才繼續打包app
+  if [[ ! -z $agentList ]]; then
+    echo "ENV: $THIS_ENV, AGENT_LIST: $agentList"
+    for ((j=0; j < ${#AGENT_LIST[@]}; j++)); do
+      THIS_AGENT=${AGENT_LIST[$j]}
 
-    readVersionList $THIS_ENV $THIS_AGENT
-  done
+      #change agent setting
+      echo "SITE_CODE=$THIS_AGENT" > .env.production.android.local
+
+      readVersionList $THIS_ENV $THIS_AGENT
+    done
+
+  else
+    echo "ENV: $THIS_ENV, without AGENT_LIST. can not build app."
+  fi
 }
 
 readVersionList() {
@@ -164,7 +183,9 @@ fi
 
 
 #install node_modules
-npm install --unsafe-perm
+if [ ! -d "node_modules" ]; then
+  npm install --unsafe-perm
+fi
 npm rebuild node-sass
 
 #start to build app
