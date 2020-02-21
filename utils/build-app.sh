@@ -50,6 +50,8 @@ buildAndroidApk() {
     latestVersionPath=$(echo $tmpOutputPath | sed "s/$THIS_VERSION/latest/")
     echo "android apk - tmpOutputPath: $tmpOutputPath"
     echo "android apk - latestVersionPath: $latestVersionPath"
+    mkdir -p $tmpOutputPath
+    mkdir -p $latestVersionPath
 
     #build unsigned.apk
     echo Y | npm run build-android
@@ -61,18 +63,17 @@ buildAndroidApk() {
     zipalign -v 4 $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK
 
     #list outputs
+    #app-release-unsigned.apk
     echo "list: $ANDROID_RELEASE_APK_OUTPUT_PATH" && ls -la $ANDROID_RELEASE_APK_OUTPUT_PATH
 
-    #copy apk to tmpOutputPath
-    mkdir -p $tmpOutputPath
+    #copy signed apk to tmpOutputPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
-    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_ANDROID_UNSIGNED_APK $tmpOutputPath/$ANDROID_ANDROID_UNSIGNED_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $tmpOutputPath/$ANDROID_UNSIGNED_APK
     echo "list: $tmpOutputPath" && ls -la $tmpOutputPath
 
-    #copy apk to latestVersionPath
-    mkdir -p $latestVersionPath
+    #copy signed apk to latestVersionPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
-    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_ANDROID_UNSIGNED_APK $latestVersionPath/$ANDROID_ANDROID_UNSIGNED_APK
+    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $latestVersionPath/$ANDROID_UNSIGNED_APK
     echo "list: $latestVersionPath" && ls -la $latestVersionPath
 
     if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
