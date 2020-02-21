@@ -71,12 +71,10 @@ buildAndroidApk() {
 
     #copy signed apk to tmpOutputPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $tmpOutputPath/$ANDROID_RELEASE_APK
-    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $tmpOutputPath/$ANDROID_UNSIGNED_APK
     echo "list: $tmpOutputPath" && ls -la $tmpOutputPath
 
     #copy signed apk to latestVersionPath
     cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_RELEASE_APK $latestVersionPath/$ANDROID_RELEASE_APK
-    cp $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $latestVersionPath/$ANDROID_UNSIGNED_APK
     echo "list: $latestVersionPath" && ls -la $latestVersionPath
 
     if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
@@ -131,6 +129,8 @@ readEnvList() {
 readAgentList() {
   THIS_ENV=$1
 
+  agentList=()
+
   #依據環境，取得相對應的agentList
   if [[ $THIS_ENV == "dev" ]]; then
       agentList=$DEV_AGENT_LIST
@@ -143,8 +143,8 @@ readAgentList() {
   #agentList存在，才繼續打包app
   if [[ ! -z $agentList ]]; then
     echo "ENV: $THIS_ENV, AGENT_LIST: $agentList"
-    for ((j=0; j < ${#AGENT_LIST[@]}; j++)); do
-      THIS_AGENT=${AGENT_LIST[$j]}
+    for ((j=0; j < ${#agentList[@]}; j++)); do
+      THIS_AGENT=${agentList[$j]}
 
       #change agent setting
       echo "SITE_CODE=$THIS_AGENT" > .env.production.android.local
@@ -183,10 +183,24 @@ fi
 
 
 #install node_modules
-if [ ! -d "node_modules" ]; then
-  npm install --unsafe-perm
-fi
+npm install --unsafe-perm
 npm rebuild node-sass
 
 #start to build app
 readEnvList
+
+#check build success
+if [[ -n ${ENV_LIST[dev]} && ! -z $DEV_AGENT_LIST  && ! -d android/dev ]]; then
+  echo "ENV: dev - build failed!"
+  exit 2
+fi
+
+if [[ -n ${ENV_LIST[qa]} && ! -z $QA_AGENT_LIST  && ! -d android/qa ]]; then
+  echo "ENV: qa - build failed!"
+  exit 2
+fi
+
+if [[ -n ${ENV_LIST[prod]} && ! -z $PROD_AGENT_LIST  && ! -d android/prod ]]; then
+  echo "ENV: prod - build failed!"
+  exit 2
+fi
