@@ -45,6 +45,10 @@ echo "ANDROID_RELEASE_APK: $ANDROID_RELEASE_APK"
 cd $projectBasePath
 
 buildAndroidApk() {
+    #clean build
+    rm -rf $ANDROID_DEBUG_APK_OUTPUT_PATH
+    rm -rf $ANDROID_RELEASE_APK_OUTPUT_PATH
+
     #tmp path for upload to s3
     tmpOutputPath=$1
     if [ -z "$tmpOutputPath" ]; then
@@ -60,7 +64,7 @@ buildAndroidApk() {
 
     #build debug apk
     if [[ ! -z $ANDROID_DEBUG_APK_OUTPUT_PATH && ! -z $ANDROID_DEBUG_APK && $THIS_ENV != "prod" ]]; then
-        echo Y | npm run dev-android
+        echo Y | SITE_CODE=$THIS_AGENT npm run debug-android
 
         if [[ -f $ANDROID_DEBUG_APK_OUTPUT_PATH/$ANDROID_DEBUG_APK ]]; then
           #copy debug apk to tmpOutputPath & latestVersionPath
@@ -72,7 +76,7 @@ buildAndroidApk() {
     fi
 
     #build unsigned.apk
-    echo Y | npm run build-android
+    echo Y | SITE_CODE=$THIS_AGENT npm run build-android
 
     #get signed.apk
     echo $KEYSTORE_PASSWORD | jarsigner -verbose -keystore $KEYSTORE_FILE -signedjar $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $KEYSTORE_ALIAS
@@ -127,12 +131,18 @@ readEnvList() {
       if [[ $THIS_ENV == "dev" ]] && [[ $ENV_DEV != "" ]]; then
           printf "use ENV_DEV for .env.production.local\n"
           printf $ENV_DEV | base64 -d > .env.production.local
+          printf $ENV_DEV | base64 -d > .env.production
+          printf $ENV_DEV | base64 -d > .env
       elif [[ $THIS_ENV == "qa" ]] && [[ $ENV_QA != "" ]]; then
           printf "use ENV_QA for .env.production.local\n"
           printf $ENV_QA | base64 -d > .env.production.local
+          printf $ENV_QA | base64 -d > .env.production
+          printf $ENV_QA | base64 -d > .env
       elif [[ $THIS_ENV == "prod" ]] && [[ $ENV_PROD != "" ]]; then
           printf "use ENV_PROD for .env.production.local\n"
           printf $ENV_PROD | base64 -d > .env.production.local
+          printf $ENV_PROD | base64 -d > .env.production
+          printf $ENV_PROD | base64 -d > .env
       else
         echo "Err! can not get ENV variable (ENV_DEV, ENV_QA, ENV_PROD) in CI for .env.production.local"
       fi
@@ -162,7 +172,14 @@ readAgentList() {
       THIS_AGENT=${agentList[$j]}
 
       #change agent setting
-      echo "SITE_CODE=$THIS_AGENT" > .env.production.android.local
+      export SITE_CODE=$THIS_AGENT
+      echo "SITE_CODE=$SITE_CODE" > .env.production.android.local
+      echo "SITE_CODE=$SITE_CODE" > .env.production.android
+      echo "SITE_CODE=$SITE_CODE" > .env.android.local
+      echo "SITE_CODE=$SITE_CODE" > .env.android
+      echo "SITE_CODE=$SITE_CODE" >> .env
+      echo "SITE_CODE=$SITE_CODE" >> .env.production
+      echo "SITE_CODE=$SITE_CODE" >> .env.production.local
 
       readVersionList $THIS_ENV $THIS_AGENT
     done
@@ -191,10 +208,10 @@ readVersionList() {
   done
 }
 
-if [[ ! -z $ANDROID_KEYSTORE ]]; then
-  echo "create android keystore! path: /tmp/key"
-  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
-fi
+#if [[ ! -z $ANDROID_KEYSTORE ]]; then
+#  echo "create android keystore! path: /tmp/key"
+#  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
+#fi
 
 
 #install node_modules
