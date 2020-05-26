@@ -9,12 +9,12 @@ projectBasePath=$2
 
 if [ -z $platform ]; then
     echo "<platform> is empty."
-    exit 2
+    exit 1
 fi
 
 if [ -z $projectBasePath ]; then
     echo "<projectBasePath> is empty."
-    exit 2
+    exit 1
 fi
 
 #string to array
@@ -98,28 +98,19 @@ buildAndroidApk() {
 
     if [[ ! $(ls -A "$latestVersionPath/$ANDROID_RELEASE_APK" ) ]]; then
       echo "Build Failed"
-      exit 2
+      exit 1
     fi
-}
-
-buildIOSApp() {
-  #tmp path for upload to s3
-  tmpOutputPath=$1
-  if [ -z "$tmpOutputPath" ]; then
-      tmpOutputPath="undefined"
-  fi
-
-  echo Y | npm run build-ios
 }
 
 buildApp() {
   #tmp path for upload to s3
   tmpOutputPath=$1
 
-  if [ $platform == "ios" ]; then
-      buildIOSApp "ios/$tmpOutputPath"
-  elif [ $platform == "android" ]; then
+  if [ $platform == "android" ]; then
       buildAndroidApk "android/$tmpOutputPath"
+  else
+      echo "params [platform] must be android"
+      exit 1
   fi
 }
 
@@ -213,8 +204,8 @@ readVersionList() {
 #  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
 #fi
 
-
 #install node_modules
+echo "install node_modules ..."
 npm install --unsafe-perm
 npm rebuild node-sass
 
@@ -224,15 +215,15 @@ readEnvList
 #check build success
 if [[ -n ${ENV_LIST[dev]} && ! -z $DEV_AGENT_LIST  && ! -d android/dev ]]; then
   echo "ENV: dev - build failed!"
-  exit 2
+  exit 1
 fi
 
 if [[ -n ${ENV_LIST[qa]} && ! -z $QA_AGENT_LIST  && ! -d android/qa ]]; then
   echo "ENV: qa - build failed!"
-  exit 2
+  exit 1
 fi
 
 if [[ -n ${ENV_LIST[prod]} && ! -z $PROD_AGENT_LIST  && ! -d android/prod ]]; then
   echo "ENV: prod - build failed!"
-  exit 2
+  exit 1
 fi
