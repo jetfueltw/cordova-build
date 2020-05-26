@@ -17,6 +17,10 @@ if [ -z $projectBasePath ]; then
     exit 1
 fi
 
+if [ -z $LIVE_MODE ]; then
+  export LIVE_MODE=false
+fi
+
 #string to array
 IFS=',' read -a ENV_LIST <<< "$ENV_LIST"
 IFS=',' read -a AGENT_LIST <<< "$AGENT_LIST"
@@ -24,6 +28,7 @@ IFS=',' read -a VERSION_LIST <<< "$VERSION_LIST"
 
 #print params
 echo "platform: $platform"
+echo "LIVE_MODE: $LIVE_MODE"
 echo "ENV_LIST: ${ENV_LIST[*]}"
 echo "VERSION_LIST: ${VERSION_LIST[*]}"
 
@@ -64,7 +69,7 @@ buildAndroidApk() {
 
     #build debug apk
     if [[ ! -z $ANDROID_DEBUG_APK_OUTPUT_PATH && ! -z $ANDROID_DEBUG_APK && $THIS_ENV != "prod" ]]; then
-        echo Y | SITE_CODE=$THIS_AGENT npm run debug-android
+        echo Y | SITE_CODE=$THIS_AGENT LIVE_MODE=$LIVE_MODE npm run debug-android
 
         if [[ -f $ANDROID_DEBUG_APK_OUTPUT_PATH/$ANDROID_DEBUG_APK ]]; then
           #copy debug apk to tmpOutputPath & latestVersionPath
@@ -76,7 +81,7 @@ buildAndroidApk() {
     fi
 
     #build unsigned.apk
-    echo Y | SITE_CODE=$THIS_AGENT npm run build-android
+    echo Y | SITE_CODE=$THIS_AGENT LIVE_MODE=$LIVE_MODE npm run build-android
 
     #get signed.apk
     echo $KEYSTORE_PASSWORD | jarsigner -verbose -keystore $KEYSTORE_FILE -signedjar $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_SIGNED_APK $ANDROID_RELEASE_APK_OUTPUT_PATH/$ANDROID_UNSIGNED_APK $KEYSTORE_ALIAS
