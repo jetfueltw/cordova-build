@@ -21,6 +21,11 @@ if [ -z $LIVE_MODE ]; then
   export LIVE_MODE=false
 fi
 
+if [ -z $APP_ID ]; then
+  echo "<APP_ID> is empty."
+  exit 1
+fi
+
 #string to array
 IFS=',' read -a ENV_LIST <<< "$ENV_LIST"
 IFS=',' read -a AGENT_LIST <<< "$AGENT_LIST"
@@ -28,6 +33,7 @@ IFS=',' read -a VERSION_LIST <<< "$VERSION_LIST"
 
 #print params
 echo "platform: $platform"
+echo "APP_ID: $APP_ID"
 echo "LIVE_MODE: $LIVE_MODE"
 echo "ENV_LIST: ${ENV_LIST[*]}"
 echo "VERSION_LIST: ${VERSION_LIST[*]}"
@@ -46,6 +52,12 @@ echo "ANDROID_DEBUG_APK: $ANDROID_DEBUG_APK"
 echo "ANDROID_UNSIGNED_APK: $ANDROID_UNSIGNED_APK"
 echo "ANDROID_SIGNED_APK: $ANDROID_SIGNED_APK"
 echo "ANDROID_RELEASE_APK: $ANDROID_RELEASE_APK"
+
+export APP_TYPE="cpw"
+if [ $LIVE_MODE = true ]; then
+  export APP_TYPE="live"
+fi
+echo "APP_TYPE: $APP_TYPE"
 
 cd $projectBasePath
 
@@ -200,7 +212,7 @@ readVersionList() {
 
     printf "cat .env.production.local\n" && cat .env.production.local
     printf "cat .env.production.android.local\n" && cat .env.production.android.local
-    buildApp $THIS_ENV/$THIS_AGENT/app/cpw/$THIS_VERSION/$platform
+    buildApp $THIS_ENV/$THIS_AGENT/app/$APP_TYPE/$THIS_VERSION/$platform
   done
 }
 
