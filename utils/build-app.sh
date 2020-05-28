@@ -22,8 +22,7 @@ if [ -z $LIVE_MODE ]; then
 fi
 
 if [ -z $APP_ID ]; then
-  echo "<APP_ID> is empty."
-  exit 1
+  export APP_ID="com.cpw.awcp"
 fi
 
 #string to array
