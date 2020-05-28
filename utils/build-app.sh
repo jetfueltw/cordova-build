@@ -216,10 +216,10 @@ readVersionList() {
   done
 }
 
-#if [[ ! -z $ANDROID_KEYSTORE ]]; then
-#  echo "create android keystore! path: /tmp/key"
-#  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
-#fi
+if [[ ! -z $ANDROID_KEYSTORE ]]; then
+  echo "create android keystore! path: /tmp/key"
+  mkdir -p /tmp/key && echo $ANDROID_KEYSTORE | base64 -d > /tmp/key/cpw-android-release-key.keystore
+fi
 
 #install node_modules
 echo "install node_modules ..."
