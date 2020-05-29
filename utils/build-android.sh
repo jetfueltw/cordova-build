@@ -1,6 +1,8 @@
 #! /bin/bash
 
-# ./build-app.sh android <projectBasePath>    產出android app
+# 已棄用，改在各自專案下，建立 build-android.sh，在 mount 進來 container
+
+# ./build-android.sh android <projectBasePath>    產出android app
 
 platform=$1
 platform=$(printf '%s\n' "$platform" | awk '{ print tolower($0) }')
